@@ -7,7 +7,7 @@ const STREAMS = [
   "Fineart Education","Higher Education_PG","Higher Education_UG",
   "Medical Education_PG","Medical Education_UG","Ayush Education",
 ];
-const TYPES = ["Government", "Private", "Autonomous"];
+const TYPES = ["Government", "Private", "Autonomous","Unaided"];
 
 export default function AdminColleges() {
   const [colleges, setColleges] = useState([]);

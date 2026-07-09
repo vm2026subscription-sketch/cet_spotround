@@ -20,7 +20,7 @@ const collegeSchema=new mongoose.Schema({
     code:{type:String,required:true,unique:true},
     city:{type:String,required:true},
     stream:{type:String,enum:STREAMS},
-    type:{type:String,enum:["Government","Private","Autonomous"],default:"Private"},
+    type:{type:String,enum:["Government","Private","Autonomous","Unaided"],default:"Private"},
     branches:[branchSchema],
 },
     {timestamps:true}
