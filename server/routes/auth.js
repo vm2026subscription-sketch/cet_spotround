@@ -13,6 +13,16 @@ router.post("/register",async(req,res)=>{
     if(!name || !email || !password){
         return res.status(400).json({message:"Name,email and password are required"})
     }
+
+    // CET percentile is the merit rank used for seat allocation, so it is mandatory. (bug 1)
+    if(cetPercentile===undefined || cetPercentile===null || cetPercentile===""){
+        return res.status(400).json({message:"CET percentile is required"})
+    }
+    const percentileNum=Number(cetPercentile);
+    if(Number.isNaN(percentileNum) || percentileNum<0 || percentileNum>100){
+        return res.status(400).json({message:"CET percentile must be a number between 0 and 100"})
+    }
+
     const existing=await User.findOne({email});
     if(existing){
         return res.status(409).json({message:"Email already registered"})
@@ -22,7 +32,7 @@ router.post("/register",async(req,res)=>{
 
     const user=await User.create({
         name,email,password:hashed,
-        cetApplicationId,cetPercentile,category,
+        cetApplicationId,cetPercentile:percentileNum,category,
         role:"student",
     });
 

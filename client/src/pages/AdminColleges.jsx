@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api";
 import Layout from "../components/Layout";
+import BulkImport from "../components/BulkImport";
 
 const STREAMS = [
   "Technical-PG","Technical-UG","Agricultural Education",
@@ -105,6 +106,7 @@ export default function AdminColleges() {
   return (
     <Layout>
       <h1 className="page-title">Colleges &amp; Vacant Seats</h1>
+      <BulkImport onDone={loadColleges} />
       {msg && <div className="auth-success">{msg}</div>}
       {error && <div className="auth-error">{error}</div>}
 

@@ -58,8 +58,8 @@ export default function Register() {
                 <input name="cetApplicationId" value={form.cetApplicationId} onChange={onChange} />
               </div>
               <div className="field">
-                <label>CET Percentile</label>
-                <input type="number" step="0.01" min="0" max="100"
+                <label>CET Percentile *</label>
+                <input type="number" step="0.01" min="0" max="100" required
                   name="cetPercentile" value={form.cetPercentile} onChange={onChange} />
               </div>
               <div className="field">

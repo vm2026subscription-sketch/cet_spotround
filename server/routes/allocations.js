@@ -22,10 +22,17 @@ router.post("/run",requireAuth,requireAdmin,async(req,res)=>{
         if(applications.length ===0)
             return res.status(400).json({message:"No applications to allocate"})
 
-        // 3. SORT by merit - highest percentile first
-        applications.sort(
-            (a,b)=>b.student.cetPercentile - a.student.cetPercentile
-        );
+        // 3. SORT by merit - highest percentile first.
+        //    (bug 1) Guard against a missing percentile: treat it as -1 so it can
+        //    never produce NaN and silently corrupt the merit order.
+        //    (bug 4) Tie-breaker: if two candidates have the SAME percentile, the one
+        //    who submitted their application earlier is ranked higher.
+        applications.sort((a,b)=>{
+            const pa=a.student?.cetPercentile ?? -1;
+            const pb=b.student?.cetPercentile ?? -1;
+            if(pb!==pa) return pb-pa;                                // higher percentile first
+            return new Date(a.createdAt)-new Date(b.createdAt);      // earlier applicant wins the tie
+        });
 
         // 4. Load all colleges into memory so we can decrement seats  as we go
         const colleges=await College.find();
