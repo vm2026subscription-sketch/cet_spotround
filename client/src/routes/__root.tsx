@@ -12,6 +12,11 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
+// Absolute base used for social-share tags (og:image etc. must be absolute URLs,
+// relative paths are ignored by scrapers like WhatsApp/Twitter). Update this if
+// the site moves to a custom domain.
+const SITE_URL = "https://cet-spotround.vercel.app";
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -91,11 +96,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Maharashtra CAP admissions — vacant seats, choice filling, and allotment results in one professional portal.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: `${SITE_URL}/og-image.png` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Virtual CAP Admission Portal" },
+      {
+        name: "twitter:description",
+        content:
+          "Maharashtra CAP admissions — vacant seats, choice filling, and allotment results.",
+      },
+      { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/favicon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",
