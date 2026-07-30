@@ -4,8 +4,10 @@ node_modules/
 # secrets / environment
 .env
 *.env
+.env.*
 .env.local
 .dev.vars
+PRODUCTION_SECRET.txt
 
 # build output
 dist/
@@ -15,6 +17,8 @@ build/
 .vinxi/
 .nitro/
 .tanstack/
+.vercel/
+.wrangler/
 
 # logs
 *.log
