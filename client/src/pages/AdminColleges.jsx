@@ -19,7 +19,7 @@ export default function AdminColleges() {
 
   const blankNew = {
     name: "", code: "", city: "", stream: "", type: "Private",
-    branches: [{ branchName: "", branchCode: "", totalSeats: 0, vacantSeats: 0 }],
+    branches: [{ branchName: "", branchCode: "", totalSeats: 0, vacantSeats: 0, instituteQuota: 0 }],
   };
   const [form, setForm] = useState(blankNew);
 
@@ -56,8 +56,8 @@ export default function AdminColleges() {
       name: c.name, code: c.code, city: c.city,
       stream: c.stream || "", type: c.type || "Private",
       branches: c.branches.length
-        ? c.branches.map((b) => ({ _id: b._id, branchName: b.branchName, branchCode: b.branchCode || "", totalSeats: b.totalSeats ?? 0, vacantSeats: b.vacantSeats ?? 0 }))
-        : [{ branchName: "", branchCode: "", totalSeats: 0, vacantSeats: 0 }],
+        ? c.branches.map((b) => ({ _id: b._id, branchName: b.branchName, branchCode: b.branchCode || "", totalSeats: b.totalSeats ?? 0, vacantSeats: b.vacantSeats ?? 0, instituteQuota: b.instituteQuota ?? 0 }))
+        : [{ branchName: "", branchCode: "", totalSeats: 0, vacantSeats: 0, instituteQuota: 0 }],
     });
     setMsg(""); setError("");
     document.getElementById("college-form")?.scrollIntoView({ behavior: "smooth" });
@@ -68,7 +68,7 @@ export default function AdminColleges() {
   const onBranchField = (i, field, value) =>
     setForm({ ...form, branches: form.branches.map((b, idx) => (idx === i ? { ...b, [field]: value } : b)) });
   const addBranchRow = () =>
-    setForm({ ...form, branches: [...form.branches, { branchName: "", branchCode: "", totalSeats: 0, vacantSeats: 0 }] });
+    setForm({ ...form, branches: [...form.branches, { branchName: "", branchCode: "", totalSeats: 0, vacantSeats: 0, instituteQuota: 0 }] });
   const removeBranchRow = (i) =>
     setForm({ ...form, branches: form.branches.filter((_, idx) => idx !== i) });
 
@@ -83,6 +83,7 @@ export default function AdminColleges() {
         ...(b._id ? { _id: b._id } : {}),
         branchName: b.branchName, branchCode: b.branchCode,
         totalSeats: Number(b.totalSeats), vacantSeats: Number(b.vacantSeats),
+        instituteQuota: Number(b.instituteQuota) || 0,
       })),
     };
 
@@ -124,14 +125,15 @@ export default function AdminColleges() {
             </div>
           </div>
           <table className="data-table">
-            <thead><tr><th>Branch</th><th>Code</th><th>Total</th><th>Vacant Seats</th><th></th></tr></thead>
+            <thead><tr><th>Branch</th><th>Code</th><th className="ta-num">Total</th><th className="ta-num">Inst. Quota</th><th className="ta-num">Vacant Seats</th><th></th></tr></thead>
             <tbody>
               {c.branches.map((b) => (
                 <tr key={b._id}>
                   <td>{b.branchName}</td>
                   <td>{b.branchCode}</td>
-                  <td>{b.totalSeats ?? 0}</td>
-                  <td><input type="number" min="0" className="seat-input" value={b.vacantSeats}
+                  <td className="ta-num">{b.totalSeats ?? 0}</td>
+                  <td className="ta-num">{b.instituteQuota ?? 0}</td>
+                  <td className="ta-num"><input type="number" min="0" className="seat-input" value={b.vacantSeats}
                     onChange={(e) => onSeatChange(c._id, b._id, e.target.value)} /></td>
                   <td><button className="btn btn-primary btn-sm" onClick={() => saveSeat(c._id, b)}>Save</button></td>
                 </tr>
@@ -174,6 +176,8 @@ export default function AdminColleges() {
               <input type="number" min="0" value={b.totalSeats} onChange={(e) => onBranchField(i, "totalSeats", e.target.value)} /></div>
             <div className="field"><label>Vacant seats</label>
               <input type="number" min="0" value={b.vacantSeats} onChange={(e) => onBranchField(i, "vacantSeats", e.target.value)} /></div>
+            <div className="field"><label>Inst. quota</label>
+              <input type="number" min="0" value={b.instituteQuota} onChange={(e) => onBranchField(i, "instituteQuota", e.target.value)} /></div>
             <button className="mini-btn danger" onClick={() => removeBranchRow(i)} disabled={form.branches.length === 1}>✕</button>
           </div>
         ))}

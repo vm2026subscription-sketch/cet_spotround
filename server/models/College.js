@@ -11,6 +11,8 @@ const branchSchema=new mongoose.Schema({
     branchCode:{type:String},
     totalSeats:{type:Number,default:0,min:0},
     vacantSeats:{type:Number,required:true,min:0},
+    // Seats the institute fills directly (outside CAP). CAP seats = vacant - this.
+    instituteQuota:{type:Number,default:0,min:0},
 },
     {_id:true}
 )

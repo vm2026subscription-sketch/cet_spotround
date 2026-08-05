@@ -889,6 +889,7 @@ input:focus, select:focus, textarea:focus {
 
 .ta-center { text-align: center; }
 .ta-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.table-legend { margin: -4px 0 14px; font-size: 12.5px; }
 .letter-badge.pill-grey { background: var(--surface-3); color: var(--muted-t); border-color: var(--line-strong); }
 
 /* =========================================================

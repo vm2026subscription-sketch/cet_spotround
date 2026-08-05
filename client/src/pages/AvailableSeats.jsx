@@ -18,7 +18,11 @@ export default function AvailableSeats() {
         const flat = [];
         collegesRes.data.forEach((c) =>
           c.branches.forEach((b) =>
-            flat.push({ collegeId: c._id, collegeName: c.name, city: c.city, branchName: b.branchName, vacantSeats: b.vacantSeats })
+            flat.push({
+              collegeId: c._id, collegeName: c.name, city: c.city, branchName: b.branchName,
+              instituteQuota: b.instituteQuota || 0,
+              capSeats: Math.max(0, (b.vacantSeats || 0) - (b.instituteQuota || 0)),
+            })
           )
         );
         setRows(flat);
@@ -80,10 +84,15 @@ export default function AvailableSeats() {
       {msg && <div className="auth-success">{msg}</div>}
       {error && <div className="auth-error">{error}</div>}
 
+      <p className="muted-line table-legend">
+        <strong>CAP Seats</strong> = seats you can apply for here.{" "}
+        <strong>Institutional Quota</strong> seats are filled directly by the college.
+      </p>
+
       <div className="card table-card">
         <table className="data-table">
           <thead>
-            <tr><th>College</th><th>Branch</th><th>City</th><th>Vacant Seats</th><th className="ta-center">Apply</th></tr>
+            <tr><th>College</th><th>Branch</th><th>City</th><th className="ta-num">Inst. Quota</th><th className="ta-num">CAP Seats</th><th className="ta-center">Apply</th></tr>
           </thead>
           <tbody>
             {rows.map((r, i) => {
@@ -93,7 +102,8 @@ export default function AvailableSeats() {
                   <td>{r.collegeName}</td>
                   <td>{r.branchName}</td>
                   <td>{r.city}</td>
-                  <td>{r.vacantSeats}</td>
+                  <td className="ta-num">{r.instituteQuota}</td>
+                  <td className="ta-num">{r.capSeats}</td>
                   <td className="ta-center">
                     {already
                       ? <span className="applied-tag">✓ Added</span>

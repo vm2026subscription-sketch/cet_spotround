@@ -117,6 +117,7 @@ router.put("/:id",requireAuth,requireAdmin,async(req,res)=>{
                 branchCode:b.branchCode,
                 totalSeats:Number(b.totalSeats)||0,
                 vacantSeats:Number(b.vacantSeats)||0,
+                instituteQuota:Number(b.instituteQuota)||0,
             }));
         }
         await college.save();
@@ -176,6 +177,7 @@ router.post("/bulk",requireAuth,requireAdmin,async(req,res)=>{
                     branchCode:b.branchCode,
                     totalSeats:Number(b.totalSeats)||0,
                     vacantSeats:Number(b.vacantSeats)||0,
+                    instituteQuota:Number(b.instituteQuota)||0,
                 })),
             };
 
@@ -229,6 +231,7 @@ router.post("/bulk",requireAuth,requireAdmin,async(req,res)=>{
                     branchCode:b.branchCode,
                     totalSeats:Number(b.totalSeats)||0,
                     vacantSeats:Number(b.vacantSeats)||0,
+                    instituteQuota:Number(b.instituteQuota)||0,
                 })),
             };
 

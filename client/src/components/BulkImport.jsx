@@ -53,6 +53,7 @@ export default function BulkImport({ onDone }) {
           branchCode: String(r.branchCode || "").trim(),
           totalSeats: Number(r.totalSeats) || 0,
           vacantSeats: Number(r.vacantSeats) || 0,
+          instituteQuota: Number(r.instituteQuota) || 0,
         });
       }
     });
