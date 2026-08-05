@@ -76,7 +76,7 @@ export default function PublicColleges() {
       <div className="card table-card">
         <table className="data-table">
           <thead>
-            <tr><th>Code</th><th>College Name</th><th>Type</th><th>Total Seats</th><th>Vacant Seats</th><th>Location</th><th className="ta-center">Actions</th></tr>
+            <tr><th>Code</th><th>College Name</th><th>Type</th><th className="ta-num">Total Seats</th><th className="ta-num">Vacant Seats</th><th>Location</th><th className="ta-center">Actions</th></tr>
           </thead>
           <tbody>
             {loading ? (
@@ -89,8 +89,8 @@ export default function PublicColleges() {
                   <td>{c.code}</td>
                   <td>{c.name}</td>
                   <td>{c.type || "Private"}</td>
-                  <td>{sumTotal(c)}</td>
-                  <td><span className={`seat-badge ${sumVacant(c) > 0 ? "seat-open" : "seat-full"}`}>{sumVacant(c)}</span></td>
+                  <td className="ta-num">{sumTotal(c)}</td>
+                  <td className="ta-num"><span className={`seat-badge ${sumVacant(c) > 0 ? "seat-open" : "seat-full"}`}>{sumVacant(c)}</span></td>
                   <td>{c.city}</td>
                   <td className="ta-center">
                     <button className="btn btn-ghost btn-sm" onClick={() => setOpenId(openId === c._id ? null : c._id)}>
