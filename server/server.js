@@ -14,7 +14,9 @@ if (dns.getServers().every((s) => s === "127.0.0.1" || s === "::1")) {
 const app=express();
 
 app.use(cors());
-app.use(express.json());
+// Bulk college import sends the whole sheet as one JSON body; the 100kb default
+// rejects a real Maharashtra-sized upload (1400+ colleges) with 413.
+app.use(express.json({ limit: "5mb" }));
 
 mongoose
 .connect(process.env.MONGO_URI)
