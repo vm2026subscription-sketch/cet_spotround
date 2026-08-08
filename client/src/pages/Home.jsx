@@ -21,9 +21,9 @@ const DISCIPLINES = [
 // Courses shown under each discipline (edit these lists freely).
 const COURSES = {
   "Technical-PG": ["MBA / MMS", "MCA", "M.E / M.Tech", "M.Arch", "M.Pharm", "M.HMCT"],
-  "Technical-UG": ["B.E / B.Tech", "B.Pharm", "B.Arch", "BCA / MCA (Integrated)", "B.Planning", "B.Design", "B.HMCT"],
-  "Agricultural Education": ["B.Sc. Agriculture", "Horticulture", "Food Technology", "Forestry"],
-  "Fineart Education": ["BFA", "MFA", "Applied Art"],
+  "Technical-UG": ["B.E / B.Tech", "B.Pharm", "BCA", "BBA", "BMS", "B.Arch", "B.HMCT", "B.Design", "B.Planning"],
+  "Agricultural Education": ["B.Sc. Agriculture", "Food Technology", "Biotechnology", "Agricultural Engineering", "Agri Business Management", "Horticulture"],
+  "Fineart Education": ["Applied Art", "Painting", "Textile Design", "Sculpture", "Metal Work", "Ceramic", "Interior Decoration"],
   "Higher Education_PG": ["M.Ed.", "M.P.Ed."],
   "Higher Education_UG": ["LL.B. (3 Years)", "LL.B. (5 Years)", "B.Ed.", "B.P.Ed."],
   "Medical Education_PG": ["MD / MS (NEET-PG)", "PG DNB", "PG Diploma"],

@@ -25,6 +25,34 @@ const STREAMS=[
 ];
 const TYPES=["Government","Private","Autonomous","Unaided"];
 
+// Derive a branch's course-category (used by the Home dropdown + colleges filter)
+// from its name, so an import without an explicit "course" column still populates
+// it instead of wiping it. If a course is given in the sheet, that wins.
+function deriveCourse(stream,name){
+    const b=String(name||"").trim(); const l=b.toLowerCase();
+    if(stream==="Fineart Education") return b.replace(/^B\.?\s*F\.?\s*A\.?\s*/i,"").trim() || "BFA";
+    if(stream==="Agricultural Education"){
+        if(/horticulture/.test(l)) return "Horticulture";
+        if(/agri.*eng/.test(l)) return "Agricultural Engineering";
+        if(/food/.test(l)) return "Food Technology";
+        if(/biotech/.test(l)) return "Biotechnology";
+        if(/business/.test(l)) return "Agri Business Management";
+        return "B.Sc. Agriculture";
+    }
+    if(stream==="Technical-UG"){
+        if(/pharm/.test(l)) return "B.Pharm";
+        if(/architect/.test(l)||/^b\.?\s*arch/.test(l)) return "B.Arch";
+        if(/hmct|hotel|catering/.test(l)) return "B.HMCT";
+        if(/planning/.test(l)) return "B.Planning";
+        if(/^bca$/.test(l)) return "BCA";
+        if(/^bba$/.test(l)) return "BBA";
+        if(/^bms$/.test(l)) return "BMS";
+        if(/^b\.?\s*des/.test(l)) return "B.Design";
+        return "B.E / B.Tech";
+    }
+    return b;
+}
+
 //GET /api/colleges/public - PUBLIC (no login). Optional ?stream=... &type=... filters
 router.get("/public",async(req,res)=>{
     try{
@@ -54,7 +82,17 @@ router.post("/",requireAuth,requireAdmin,async(req,res)=>{
         if(exists) return res.status(409).json({message:"College code already exists in this stream"});
         const seatError=findSeatError(branches);
         if(seatError) return res.status(400).json({message:seatError});
-        const college=await College.create({name,code,city,stream,type:type || "Private",branches:branches || []});
+        const college=await College.create({
+            name,code,city,stream,type:type || "Private",
+            branches:(branches||[]).map((b)=>({
+                branchName:b.branchName,
+                branchCode:b.branchCode,
+                course:String(b.course||"").trim()||deriveCourse(stream,b.branchName),
+                totalSeats:Number(b.totalSeats)||0,
+                vacantSeats:Number(b.vacantSeats)||0,
+                instituteQuota:Number(b.instituteQuota)||0,
+            })),
+        });
         res.status(201).json(college);
     }catch(err){ res.status(500).json({message:err.message}); }
 });
@@ -115,6 +153,7 @@ router.put("/:id",requireAuth,requireAdmin,async(req,res)=>{
                 ...(b._id?{_id:b._id}:{}),
                 branchName:b.branchName,
                 branchCode:b.branchCode,
+                course:String(b.course||"").trim()||deriveCourse(stream,b.branchName),
                 totalSeats:Number(b.totalSeats)||0,
                 vacantSeats:Number(b.vacantSeats)||0,
                 instituteQuota:Number(b.instituteQuota)||0,
@@ -175,6 +214,7 @@ router.post("/bulk",requireAuth,requireAdmin,async(req,res)=>{
                 branches:(c.branches || []).map((b)=>({
                     branchName:b.branchName,
                     branchCode:b.branchCode,
+                    course:String(b.course||"").trim()||deriveCourse(c.stream,b.branchName),
                     totalSeats:Number(b.totalSeats)||0,
                     vacantSeats:Number(b.vacantSeats)||0,
                     instituteQuota:Number(b.instituteQuota)||0,
@@ -229,6 +269,7 @@ router.post("/bulk",requireAuth,requireAdmin,async(req,res)=>{
                 branches:(c.branches || []).map((b)=>({
                     branchName:b.branchName,
                     branchCode:b.branchCode,
+                    course:String(b.course||"").trim()||deriveCourse(c.stream,b.branchName),
                     totalSeats:Number(b.totalSeats)||0,
                     vacantSeats:Number(b.vacantSeats)||0,
                     instituteQuota:Number(b.instituteQuota)||0,
