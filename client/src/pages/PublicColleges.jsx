@@ -20,6 +20,7 @@ export default function PublicColleges() {
   const [type, setType] = useState("");
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState(null);
+const [course, setCourse] = useState(searchParams.get("course") || "");   // ← ADD
 
   useEffect(() => {
     api.get("/colleges/public")
@@ -45,17 +46,18 @@ export default function PublicColleges() {
       if (stream && c.stream !== stream) return false;
       if (type && (c.type || "Private") !== type) return false;
       if (needle && !`${c.name} ${c.code} ${c.city}`.toLowerCase().includes(needle)) return false;
+      if (course && !c.branches.some((b) => b.course === course)) return false;   
       return true;
     });
-  }, [colleges, stream, type, q]);
+  }, [colleges, stream, type, q,course]);
 
-  const clearFilter = () => { setStream(""); setType(""); setQ(""); setSearchParams({}); };
+  const clearFilter = () => { setStream(""); setType(""); setQ(""); setCourse(""); setSearchParams({}); };
 
   return (
     <PublicLayout>
       <div className="list-head">
         <div>
-          <h1 className="page-title">{stream || "All"} Colleges</h1>
+          <h1 className="page-title">{course || stream || "All"} Colleges</h1>
           <p className="muted-line">Find real-time seat availability across institutions.</p>
         </div>
         <button className="btn btn-ghost btn-sm" onClick={clearFilter}>Clear Filter</button>

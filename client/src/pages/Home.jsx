@@ -18,6 +18,19 @@ const DISCIPLINES = [
   { key: "Ayush Education", title: "AYUSH Education", desc: "AIQ AYUSH courses and State Quota", Icon: Leaf },
 ];
 
+// Courses shown under each discipline (edit these lists freely).
+const COURSES = {
+  "Technical-PG": ["MBA / MMS", "MCA", "M.E / M.Tech", "M.Arch", "M.Pharm", "M.HMCT"],
+  "Technical-UG": ["B.E / B.Tech", "B.Pharm", "B.Arch", "BCA / MCA (Integrated)", "B.Planning", "B.Design", "B.HMCT"],
+  "Agricultural Education": ["B.Sc. Agriculture", "Horticulture", "Food Technology", "Forestry"],
+  "Fineart Education": ["BFA", "MFA", "Applied Art"],
+  "Higher Education_PG": ["M.Ed.", "M.P.Ed."],
+  "Higher Education_UG": ["LL.B. (3 Years)", "LL.B. (5 Years)", "B.Ed.", "B.P.Ed."],
+  "Medical Education_PG": ["MD / MS (NEET-PG)", "PG DNB", "PG Diploma"],
+  "Medical Education_UG": ["MBBS / BDS (NEET-UG)", "B.Sc. Nursing", "GNM"],
+  "Ayush Education": ["BAMS", "BHMS", "BUMS", "BNYS"],
+};
+
 const STATS = [
   { num: "3,200+", label: "Participating Institutes" },
   { num: "1.8 L+", label: "Seats in the current round" },
@@ -62,6 +75,7 @@ const FAQS = [
 export default function Home() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(0);
+  const [openStream, setOpenStream] = useState("");
 
   return (
     <div className="public-page">
@@ -130,13 +144,41 @@ export default function Home() {
         </div>
 
         <div className="disc-grid">
-          {DISCIPLINES.map((d) => (
-            <button key={d.key} className="disc-card" onClick={() => navigate(`/colleges?stream=${encodeURIComponent(d.key)}`)}>
-              <span className="disc-icon"><d.Icon size={20} /></span>
-              <h3 className="disc-title">{d.title}</h3>
-              <p className="disc-desc">{d.desc}</p>
-            </button>
-          ))}
+          {DISCIPLINES.map((d) => {
+            const open = openStream === d.key;
+            const courses = COURSES[d.key] || [];
+            return (
+              <div key={d.key} className="disc-card" style={{ display: "block", cursor: "pointer" }}>
+                <div onClick={() => setOpenStream(open ? "" : d.key)}>
+                  <span className="disc-icon"><d.Icon size={20} /></span>
+                  <h3 className="disc-title">{d.title}</h3>
+                  <p className="disc-desc">{d.desc}</p>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#2563eb" }}>
+                    {open ? "Hide courses ▲" : `View ${courses.length} courses ▼`}
+                  </span>
+                </div>
+                {open && (
+                  <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {courses.map((course) => (
+                      <button
+                        key={course}
+                        onClick={() => navigate(`/colleges?stream=${encodeURIComponent(d.key)}&course=${encodeURIComponent(course)}`)}
+                        style={{ textAlign: "left", padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#f8fafc", cursor: "pointer", fontSize: 14 }}
+                      >
+                        {course} →
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => navigate(`/colleges?stream=${encodeURIComponent(d.key)}`)}
+                      style={{ textAlign: "left", padding: "8px 12px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#2563eb" }}
+                    >
+                      View all {d.title} colleges →
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
