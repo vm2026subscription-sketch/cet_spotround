@@ -51,6 +51,7 @@ export default function BulkImport({ onDone }) {
         map.get(code).branches.push({
           branchName,
           branchCode: String(r.branchCode || "").trim(),
+          course: String(r.course || "").trim(),
           totalSeats: Number(r.totalSeats) || 0,
           vacantSeats: Number(r.vacantSeats) || 0,
           instituteQuota: Number(r.instituteQuota) || 0,
