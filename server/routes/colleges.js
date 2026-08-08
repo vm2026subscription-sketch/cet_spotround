@@ -50,8 +50,8 @@ router.post("/",requireAuth,requireAdmin,async(req,res)=>{
         const {name,code,city,stream,type,branches}=req.body;
         if(!name || !code || !city)
             return res.status(400).json({message:"name, code and city are required"});
-        const exists=await College.findOne({code});
-        if(exists) return res.status(409).json({message:"College code already exists"});
+        const exists=await College.findOne({code,stream});
+        if(exists) return res.status(409).json({message:"College code already exists in this stream"});
         const seatError=findSeatError(branches);
         if(seatError) return res.status(400).json({message:seatError});
         const college=await College.create({name,code,city,stream,type:type || "Private",branches:branches || []});
@@ -99,8 +99,8 @@ router.put("/:id",requireAuth,requireAdmin,async(req,res)=>{
         const {name,code,city,stream,type,branches}=req.body;
         if(!name || !code || !city)
             return res.status(400).json({message:"name, code and city are required"});
-        const clash=await College.findOne({code,_id:{$ne:req.params.id}});
-        if(clash) return res.status(409).json({message:"Another college already uses that code"});
+        const clash=await College.findOne({code,stream,_id:{$ne:req.params.id}});
+        if(clash) return res.status(409).json({message:"Another college in this stream already uses that code"});
         const seatError=findSeatError(branches);
         if(seatError) return res.status(400).json({message:seatError});
         const college=await College.findById(req.params.id);
@@ -181,8 +181,8 @@ router.post("/bulk",requireAuth,requireAdmin,async(req,res)=>{
                 })),
             };
 
-            // upsert by code: update if it already exists, otherwise create
-            const existing=await College.findOne({code:c.code});
+            // upsert by (code, stream): the same code exists in other streams
+            const existing=await College.findOne({code:c.code,stream:doc.stream});
             if(existing){
                 await College.updateOne({_id:existing._id},doc,{runValidators:true});
                 updated++;
@@ -235,7 +235,7 @@ router.post("/bulk",requireAuth,requireAdmin,async(req,res)=>{
                 })),
             };
 
-            const existing=await College.findOne({code:c.code});
+            const existing=await College.findOne({code:c.code,stream:doc.stream});
             if(existing){
                 await College.updateOne({_id:existing._id},doc,{runValidators:true});
                 updated++;

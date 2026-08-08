@@ -19,7 +19,9 @@ const branchSchema=new mongoose.Schema({
 
 const collegeSchema=new mongoose.Schema({
     name:{type:String,required:true},
-    code:{type:String,required:true,unique:true},
+    // The same numeric code is reused across streams for different institutes,
+    // so code is unique WITHIN a stream, not globally (see compound index below).
+    code:{type:String,required:true},
     city:{type:String,required:true},
     stream:{type:String,enum:STREAMS},
     type:{type:String,enum:["Government","Private","Autonomous","Unaided"],default:"Private"},
@@ -27,5 +29,7 @@ const collegeSchema=new mongoose.Schema({
 },
     {timestamps:true}
 )
+
+collegeSchema.index({stream:1,code:1},{unique:true});
 
 module.exports=mongoose.model("College",collegeSchema)
