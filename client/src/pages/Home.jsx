@@ -5,6 +5,8 @@ import {
   FileCheck2, Search, ClipboardList, Award, ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
+import SiteHeader from "../components/SiteHeader";
+import SiteFooter from "../components/SiteFooter";
 
 const DISCIPLINES = [
   { key: "Technical-PG", title: "Technical — PG", desc: "MBA, MCA, M.Tech and related PG programmes", Icon: GraduationCap },
@@ -79,23 +81,7 @@ export default function Home() {
 
   return (
     <div className="public-page">
-      {/* ============== TOP NAV ============== */}
-      <header className="topnav topnav-marketing">
-        <div className="brand-block">
-          <div className="topnav-brand brand-link">CAP Admission Portal</div>
-          <div className="brand-sub">Government of Maharashtra · Vidyarthi Mitra</div>
-        </div>
-        <nav className="mkt-nav">
-          <a href="#process" className="tn-link">Process</a>
-          <a href="#timeline" className="tn-link">Timeline</a>
-          <a href="#faq" className="tn-link">FAQs</a>
-          <Link to="/colleges" className="tn-link">Institutes</Link>
-        </nav>
-        <div className="topnav-right">
-          <Link to="/login" className="tn-link">Sign in</Link>
-          <Link to="/register" className="btn-keep">Register</Link>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* ============== HERO ============== */}
       <section className="mkt-hero">
@@ -112,12 +98,12 @@ export default function Home() {
           </p>
           <div className="mkt-hero-cta">
             <Link to="/register" className="btn btn-primary btn-lg">
-              Start Application <ArrowRight size={16} />
+              Start Application <ArrowRight size={16} aria-hidden />
             </Link>
             <Link to="/colleges" className="btn btn-ghost btn-lg">Browse Institutes</Link>
           </div>
           <div className="mkt-hero-trust">
-            <ShieldCheck size={14} /> Government-verified &nbsp;·&nbsp; Merit-based allocation &nbsp;·&nbsp; Category-aware
+            <ShieldCheck size={14} aria-hidden /> Government-verified &nbsp;·&nbsp; Merit-based allocation &nbsp;·&nbsp; Category-aware
           </div>
         </div>
 
@@ -140,7 +126,7 @@ export default function Home() {
             <h2 className="section-title">Choose your discipline</h2>
             <p className="section-sub">Real-time vacant seats across nine streams of higher education in Maharashtra.</p>
           </div>
-          <Link to="/colleges" className="btn btn-ghost">View all institutes <ArrowRight size={14} /></Link>
+          <Link to="/colleges" className="btn btn-ghost">View all institutes <ArrowRight size={14} aria-hidden /></Link>
         </div>
 
         <div className="disc-grid">
@@ -148,29 +134,37 @@ export default function Home() {
             const open = openStream === d.key;
             const courses = COURSES[d.key] || [];
             return (
-              <div key={d.key} className="disc-card" style={{ display: "block", cursor: "pointer" }}>
-                <div onClick={() => setOpenStream(open ? "" : d.key)}>
-                  <span className="disc-icon"><d.Icon size={20} /></span>
+              <div key={d.key} className="disc-card">
+                <button
+                  type="button"
+                  className="disc-toggle"
+                  onClick={() => setOpenStream(open ? "" : d.key)}
+                  aria-expanded={open}
+                >
+                  <span className="disc-icon"><d.Icon size={20} aria-hidden /></span>
                   <h3 className="disc-title">{d.title}</h3>
                   <p className="disc-desc">{d.desc}</p>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#2563eb" }}>
-                    {open ? "Hide courses ▲" : `View ${courses.length} courses ▼`}
+                  <span className="disc-more">
+                    {open ? "Hide courses" : `View ${courses.length} courses`}
+                    <ChevronDown size={14} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }} aria-hidden />
                   </span>
-                </div>
+                </button>
                 {open && (
-                  <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div className="disc-courses">
                     {courses.map((course) => (
                       <button
                         key={course}
+                        type="button"
+                        className="disc-course-btn"
                         onClick={() => navigate(`/colleges?stream=${encodeURIComponent(d.key)}&course=${encodeURIComponent(course)}`)}
-                        style={{ textAlign: "left", padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#f8fafc", cursor: "pointer", fontSize: 14 }}
                       >
-                        {course} →
+                        {course} <ArrowRight size={14} aria-hidden />
                       </button>
                     ))}
                     <button
+                      type="button"
+                      className="disc-all-btn"
                       onClick={() => navigate(`/colleges?stream=${encodeURIComponent(d.key)}`)}
-                      style={{ textAlign: "left", padding: "8px 12px", borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#2563eb" }}
                     >
                       View all {d.title} colleges →
                     </button>
@@ -194,7 +188,7 @@ export default function Home() {
         <div className="feature-grid">
           {FEATURES.map((f) => (
             <div className="feature-card" key={f.title}>
-              <span className="feature-icon"><f.Icon size={20} /></span>
+              <span className="feature-icon"><f.Icon size={20} aria-hidden /></span>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
             </div>
@@ -216,7 +210,7 @@ export default function Home() {
             <div className="process-card" key={p.step}>
               <div className="process-head">
                 <span className="process-step">{p.step}</span>
-                <span className="process-icon"><p.Icon size={18} /></span>
+                <span className="process-icon"><p.Icon size={18} aria-hidden /></span>
               </div>
               <h3>{p.title}</h3>
               <p>{p.desc}</p>
@@ -232,14 +226,14 @@ export default function Home() {
           <div>
             <span className="kicker">Round IV</span>
             <h2 className="section-title">Key dates &amp; deadlines</h2>
-            <p className="section-sub">Mark these dates. Notifications are also sent to your registered email.</p>
+            <p className="section-sub">Indicative schedule for the current round. Notifications are also sent to your registered email.</p>
           </div>
         </div>
         <ol className="timeline">
           {TIMELINE.map((t) => (
             <li className="timeline-item" key={t.title}>
               <div className="timeline-date">{t.date}</div>
-              <div className="timeline-dot" />
+              <div className="timeline-dot" aria-hidden />
               <div className="timeline-body">
                 <h4>{t.title}</h4>
                 <p>{t.desc}</p>
@@ -263,11 +257,11 @@ export default function Home() {
             const open = openFaq === i;
             return (
               <div className={`faq-item ${open ? "open" : ""}`} key={i}>
-                <button className="faq-q" onClick={() => setOpenFaq(open ? -1 : i)} aria-expanded={open}>
+                <button className="faq-q" onClick={() => setOpenFaq(open ? -1 : i)} aria-expanded={open} aria-controls={`faq-a-${i}`}>
                   <span>{f.q}</span>
-                  <ChevronDown size={16} className="faq-chev" />
+                  <ChevronDown size={16} className="faq-chev" aria-hidden />
                 </button>
-                {open && <div className="faq-a">{f.a}</div>}
+                {open && <div className="faq-a" id={`faq-a-${i}`}>{f.a}</div>}
               </div>
             );
           })}
@@ -282,46 +276,13 @@ export default function Home() {
             <p>Register in minutes with your CET application ID and start exploring live seat vacancies.</p>
           </div>
           <div className="mkt-cta-actions">
-            <Link to="/register" className="btn btn-primary btn-lg">Register now <ArrowRight size={16} /></Link>
+            <Link to="/register" className="btn btn-primary btn-lg">Register now <ArrowRight size={16} aria-hidden /></Link>
             <Link to="/login" className="btn btn-ghost btn-lg">I already have an account</Link>
           </div>
         </div>
       </section>
 
-      {/* ============== FOOTER ============== */}
-      <footer className="mkt-footer">
-        <div className="mkt-footer-inner">
-          <div className="mkt-footer-brand">
-            <div className="topnav-brand">CAP Admission Portal</div>
-            <p>Centralized admission process for engineering, medical and higher education institutes in the state of Maharashtra.</p>
-          </div>
-          <div className="mkt-footer-cols">
-            <div>
-              <h5>Portal</h5>
-              <Link to="/">Home</Link>
-              <Link to="/colleges">Institutes</Link>
-              <Link to="/login">Sign in</Link>
-              <Link to="/register">Register</Link>
-            </div>
-            <div>
-              <h5>Process</h5>
-              <a href="#process">How it works</a>
-              <a href="#timeline">Timeline</a>
-              <a href="#faq">FAQs</a>
-            </div>
-            <div>
-              <h5>Resources</h5>
-              <a href="#">Information brochure</a>
-              <a href="#">Reservation policy</a>
-              <a href="#">Grievance redressal</a>
-              <a href="#">Contact support</a>
-            </div>
-          </div>
-        </div>
-        <div className="mkt-footer-bar">
-          © {new Date().getFullYear()} Vidyarthi Mitra · Government of Maharashtra. All rights reserved.
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

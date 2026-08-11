@@ -1,24 +1,13 @@
-import { Link } from "react-router-dom";
+import SiteHeader from "./SiteHeader";
+import SiteFooter from "./SiteFooter";
 
+/** Public page shell — same header/footer as the home page for consistent navigation. */
 export default function PublicLayout({ children }) {
   return (
     <div className="public-page">
-      <header className="topnav">
-        <div className="topnav-inner">
-          <div>
-            <Link to="/" className="topnav-brand brand-link">CAP Vacancy Portal</Link>
-            <div className="brand-sub">Powered by Vidyarthi Mitra</div>
-          </div>
-          <div className="topnav-right">
-            <Link to="/login" className="tn-link">Login</Link>
-            <Link to="/colleges" className="btn-keep">View All Colleges</Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
       <main className="public-main">{children}</main>
-      <footer className="portal-footer">
-        © {new Date().getFullYear()} CAP Vacancy Portal · Powered by Vidyarthi Mitra. All rights reserved.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

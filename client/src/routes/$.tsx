@@ -5,10 +5,28 @@ import { lazy, Suspense } from "react";
 // Client-only: react-router-dom's BrowserRouter requires window.
 const AppShell = lazy(() => import("../AppShell"));
 
+function BootFallback() {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "var(--bg, #f6f8fb)",
+      }}
+      aria-busy="true"
+      aria-label="Loading portal"
+    >
+      <span className="spinner spinner-dark" style={{ width: 22, height: 22 }} />
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/$")({
   component: () => (
-    <ClientOnly fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-      <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
+    <ClientOnly fallback={<BootFallback />}>
+      <Suspense fallback={<BootFallback />}>
         <AppShell />
       </Suspense>
     </ClientOnly>

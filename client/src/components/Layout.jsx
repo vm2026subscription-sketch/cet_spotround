@@ -4,8 +4,8 @@ import { useNavigate, NavLink, useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, UserCircle2, Search, ClipboardList, Award,
   Building2, Layers, FileText, CheckCircle2,
-  Bell, ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen,
-  Menu, X, Settings, LifeBuoy, ChevronRight,
+  ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen,
+  Menu, X, LifeBuoy, ChevronRight,
 } from "lucide-react";
 
 const STUDENT_NAV = [
@@ -48,34 +48,49 @@ export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const menuBtnRef = useRef(null);
 
   useEffect(() => { localStorage.setItem("side:collapsed", collapsed ? "1" : "0"); }, [collapsed]);
   useEffect(() => { setMobileOpen(false); setMenuOpen(false); }, [location.pathname]);
 
+  // Close popover menu on outside click…
   useEffect(() => {
     const onDoc = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
+  // …and on Escape (also closes the mobile drawer), returning focus to the trigger.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      if (menuOpen) { setMenuOpen(false); menuBtnRef.current?.focus(); }
+      if (mobileOpen) setMobileOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen, mobileOpen]);
+
   const handleLogout = () => { logout(); navigate("/login"); };
   const nav = user?.role === "admin" ? ADMIN_NAV : user?.role === "student" ? STUDENT_NAV : null;
   const crumbs = CRUMBS[location.pathname] || (user?.role === "admin" ? ["Admin"] : user?.role === "student" ? ["Student"] : []);
 
-  // Public (unauth) — clean marketing shell
+  // Public (unauth) — clean shell
   if (!user) {
     return (
       <>
         <header className="topnav">
-          <Link to="/" className="topnav-brand brand-link">
-            <div className="brand-block">
-              <span>Virtual CAP Portal</span>
-              <span className="brand-sub">Government of Maharashtra · Admission Services</span>
+          <div className="topnav-inner">
+            <Link to="/" className="topnav-brand brand-link">
+              <div className="brand-block">
+                <span>Virtual CAP Portal</span>
+                <span className="brand-sub">Vidyarthi Mitra · Maharashtra Admissions</span>
+              </div>
+            </Link>
+            <div className="topnav-right">
+              <NavLink to="/login" className="tn-link">Sign in</NavLink>
+              <NavLink to="/register" className="btn btn-primary btn-sm">Register</NavLink>
             </div>
-          </Link>
-          <div className="topnav-right">
-            <NavLink to="/login" className="tn-link">Sign in</NavLink>
-            <NavLink to="/register" className="btn btn-primary btn-sm">Register</NavLink>
           </div>
         </header>
         <main className="content">{children}</main>
@@ -111,19 +126,20 @@ export default function Layout({ children }) {
           </div>
           <div className="side-group">
             <span className="side-group-label">General</span>
-            <a className="app-nav-link" href="#" onClick={(e) => e.preventDefault()}>
+            <a className="app-nav-link" href="/#faq">
               <span className="app-nav-ico"><LifeBuoy size={17} strokeWidth={1.75} /></span>
-              <span className="app-nav-label">Help & Support</span>
-            </a>
-            <a className="app-nav-link" href="#" onClick={(e) => e.preventDefault()}>
-              <span className="app-nav-ico"><Settings size={17} strokeWidth={1.75} /></span>
-              <span className="app-nav-label">Settings</span>
+              <span className="app-nav-label">Help & FAQs</span>
             </a>
           </div>
         </nav>
 
         <div className="app-side-foot">
-          <button className="side-collapse" onClick={() => setCollapsed((v) => !v)} aria-label="Toggle sidebar">
+          <button
+            className="side-collapse"
+            onClick={() => setCollapsed((v) => !v)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+          >
             {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
             <span className="app-nav-label">Collapse</span>
           </button>
@@ -131,7 +147,7 @@ export default function Layout({ children }) {
       </aside>
 
       {/* Mobile scrim */}
-      {mobileOpen && <div className="side-scrim" onClick={() => setMobileOpen(false)} />}
+      {mobileOpen && <div className="side-scrim" onClick={() => setMobileOpen(false)} aria-hidden />}
 
       {/* Main */}
       <div className="app-main">
@@ -141,49 +157,39 @@ export default function Layout({ children }) {
             <nav className="crumbs" aria-label="Breadcrumb">
               {crumbs.map((c, i) => (
                 <span key={i} className="crumb">
-                  {i > 0 && <ChevronRight size={13} className="crumb-sep" />}
-                  <span className={i === crumbs.length - 1 ? "crumb-cur" : ""}>{c}</span>
+                  {i > 0 && <ChevronRight size={13} className="crumb-sep" aria-hidden />}
+                  <span className={i === crumbs.length - 1 ? "crumb-cur" : ""} aria-current={i === crumbs.length - 1 ? "page" : undefined}>{c}</span>
                 </span>
               ))}
             </nav>
           </div>
 
           <div className="app-header-r">
-            <div className="app-search">
-              <Search size={15} />
-              <input placeholder="Search" aria-label="Search" />
-              <kbd className="kbd">⌘K</kbd>
-            </div>
-            <button className="icon-btn" aria-label="Notifications">
-              <Bell size={17} />
-              <span className="dot-badge" />
-            </button>
             <div className="app-user" ref={menuRef}>
-              <button className="app-user-btn" onClick={() => setMenuOpen((v) => !v)} aria-expanded={menuOpen}>
-                <span className="avatar">{initials(user.name)}</span>
+              <button ref={menuBtnRef} className="app-user-btn" onClick={() => setMenuOpen((v) => !v)} aria-expanded={menuOpen} aria-haspopup="menu">
+                <span className="avatar" aria-hidden>{initials(user.name)}</span>
                 <span className="app-user-meta">
                   <span className="app-user-name">{user.name}</span>
                   <span className="app-user-role">{user.role}</span>
                 </span>
-                <ChevronDown size={14} className="app-user-chev" />
+                <ChevronDown size={14} className="app-user-chev" aria-hidden />
               </button>
               {menuOpen && (
                 <div className="app-menu" role="menu">
                   <div className="app-menu-head">
-                    <span className="avatar avatar-lg">{initials(user.name)}</span>
+                    <span className="avatar avatar-lg" aria-hidden>{initials(user.name)}</span>
                     <div>
                       <div className="app-menu-name">{user.name}</div>
-                      <div className="app-menu-email">{user.email}</div>
+                      <div className="app-menu-email">{user.email || "Signed in"}</div>
                     </div>
                   </div>
                   <div className="app-menu-sep" />
                   {user.role === "student" && (
-                    <Link to="/student/profile" className="app-menu-item"><UserCircle2 size={15} /> View profile</Link>
+                    <Link to="/student/profile" className="app-menu-item" role="menuitem"><UserCircle2 size={15} /> View profile</Link>
                   )}
-                  <a href="#" className="app-menu-item" onClick={(e) => e.preventDefault()}><Settings size={15} /> Settings</a>
-                  <a href="#" className="app-menu-item" onClick={(e) => e.preventDefault()}><LifeBuoy size={15} /> Help & support</a>
+                  <a href="/#faq" className="app-menu-item" role="menuitem"><LifeBuoy size={15} /> Help & FAQs</a>
                   <div className="app-menu-sep" />
-                  <button className="app-menu-item danger" onClick={handleLogout}><LogOut size={15} /> Sign out</button>
+                  <button className="app-menu-item danger" onClick={handleLogout} role="menuitem"><LogOut size={15} /> Sign out</button>
                 </div>
               )}
             </div>
@@ -194,9 +200,9 @@ export default function Layout({ children }) {
 
         <footer className="app-foot">
           <span>© {new Date().getFullYear()} Virtual CAP Portal</span>
-          <span className="app-foot-dot" />
-          <span>Government of Maharashtra</span>
-          <span className="app-foot-dot" />
+          <span className="app-foot-dot" aria-hidden />
+          <span>Vidyarthi Mitra</span>
+          <span className="app-foot-dot" aria-hidden />
           <span>For demonstration purposes only</span>
         </footer>
       </div>
