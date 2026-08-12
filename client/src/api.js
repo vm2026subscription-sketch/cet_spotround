@@ -15,16 +15,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// If any response comes back 401 (token missing/expired), drop the stale token.
-// Full "redirect to login" handling comes in Phase 6.
+// If any response comes back 401 (token missing/expired), the session is dead:
+// drop the stale credentials and tell the app so it can return to the login page.
+// (AuthContext listens for this event — keeps a single source of truth.)
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 && localStorage.getItem("token")) {
       localStorage.removeItem("token");
+      window.dispatchEvent(new CustomEvent("auth:unauthorized"));
     }
     return Promise.reject(err);
-  }
+  },
 );
 
 export default api;

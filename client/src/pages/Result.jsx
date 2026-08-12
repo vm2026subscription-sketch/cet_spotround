@@ -1,35 +1,44 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Award, SearchX } from "lucide-react";
+import { Award, SearchX, Printer, ArrowLeft } from "lucide-react";
 import api from "../api";
 import Layout from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
+import { apiErrorMessage } from "../lib/apiError";
+import { ErrorState, EmptyState, CardSkeleton } from "../components/states";
 
 export default function Result() {
   const { user } = useAuth();
   const [state, setState] = useState("loading");
   const [allotment, setAllotment] = useState(null);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
+  const load = () => {
+    setState("loading");
+    setError("");
     api.get("/allocations/me")
       .then((res) => { setAllotment(res.data); setState("allotted"); })
-      .catch((err) => setState(err.response?.status === 404 ? "none" : "error"));
-  }, []);
+      .catch((err) => {
+        if (err.response?.status === 404) setState("none");
+        else { setError(apiErrorMessage(err, "Could not load your result.")); setState("error"); }
+      });
+  };
+  useEffect(() => { load(); }, []);
 
   return (
     <Layout>
       <h1 className="page-title">Seat Allotment Result</h1>
 
-      {state === "loading" && <div className="card"><p className="muted-line">Checking your result…</p></div>}
+      {state === "loading" && <CardSkeleton lines={5} />}
 
       {state === "allotted" && (
         <div className="letter">
           <div className="letter-head">
             <div>
-              <div className="letter-brand">Vidyarthi Mitra · CAP Portal</div>
+              <div className="letter-brand">Vidyarthi Mitra · Virtual CAP Portal</div>
               <div className="letter-sub">Centralized Admission Process — Round IV (Institute Level)</div>
             </div>
-            <span className="letter-badge"><Award size={16} /> ALLOTTED</span>
+            <span className="letter-badge"><Award size={16} aria-hidden /> ALLOTTED</span>
           </div>
 
           <h2 className="letter-title">Provisional Seat Allotment Letter</h2>
@@ -50,20 +59,29 @@ export default function Result() {
             Please follow the official reporting instructions to confirm and secure your seat.
             This letter is provisional and subject to document verification.
           </p>
-          <Link to="/student" className="back-link">← Back to dashboard</Link>
+
+          <div className="letter-actions">
+            <button className="btn btn-primary" onClick={() => window.print()}>
+              <Printer size={15} aria-hidden /> Print / Save as PDF
+            </button>
+            <Link to="/student" className="btn btn-ghost">
+              <ArrowLeft size={15} aria-hidden /> Back to dashboard
+            </Link>
+          </div>
         </div>
       )}
 
       {state === "none" && (
-        <div className="empty-state">
-          <span className="empty-icon"><SearchX size={40} /></span>
-          <h3>No seat allotted yet</h3>
-          <p>Either the allocation hasn't run, or no seat from your preference list was available at your merit rank. Check back after the results are published.</p>
+        <EmptyState
+          icon={SearchX}
+          title="No seat allotted yet"
+          message="Either the allocation hasn't run, or no seat from your preference list was available at your merit rank. Check back after the results are published."
+        >
           <Link to="/student" className="btn btn-primary">Back to dashboard</Link>
-        </div>
+        </EmptyState>
       )}
 
-      {state === "error" && <div className="auth-error">Could not load your result. Try again later.</div>}
+      {state === "error" && <ErrorState title="Unable to load your result" message={error} onRetry={load} />}
     </Layout>
   );
 }

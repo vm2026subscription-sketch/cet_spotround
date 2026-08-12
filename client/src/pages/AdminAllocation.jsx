@@ -1,41 +1,63 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Play, Trophy } from "lucide-react";
 import api from "../api";
 import Layout from "../components/Layout";
+import ConfirmDialog from "../components/ConfirmDialog";
+import { apiErrorMessage } from "../lib/apiError";
+import { ErrorState, EmptyState, TableSkeleton } from "../components/states";
 
 export default function AdminAllocation() {
   const [allotments, setAllotments] = useState([]);
   const [round, setRound] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
   const [running, setRunning] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState("");
 
   const loadAllotments = async () => {
+    setLoading(true);
+    setError("");
     try {
       const [allotRes, roundRes] = await Promise.all([api.get("/allocations"), api.get("/round")]);
       setAllotments(allotRes.data);
       setRound(roundRes.data);
-    } catch { setError("Could not load allotments."); }
+    } catch (err) {
+      setError(apiErrorMessage(err, "Could not load allotments."));
+    } finally {
+      setLoading(false);
+    }
   };
   useEffect(() => { loadAllotments(); }, []);
 
   const runAllocation = async () => {
-    if (!window.confirm("Run the seat allocation? This clears any previous result and re-allots from scratch.")) return;
-    setError(""); setSummary(null); setRunning(true);
+    setSummary(null);
+    setRunning(true);
     try {
       const res = await api.post("/allocations/run");
       setSummary(res.data);
+      setConfirmOpen(false);
+      toast.success("Allocation complete", {
+        description: `${res.data.alloted} allotted · ${res.data.notAlloted} not allotted (of ${res.data.totalApplications}). The round is now closed.`,
+      });
       await loadAllotments();
-    } catch (err) { setError(err.response?.data?.message || "Allocation failed."); }
-    finally { setRunning(false); }
+    } catch (err) {
+      setConfirmOpen(false);
+      toast.error("Allocation failed", { description: apiErrorMessage(err, "Please try again.") });
+    } finally {
+      setRunning(false);
+    }
   };
+
+  const ranked = allotments.slice().sort((a, b) => (b.student?.cetPercentile ?? -1) - (a.student?.cetPercentile ?? -1));
 
   return (
     <Layout>
       <h1 className="page-title">Allocation &amp; Results</h1>
-      {error && <div className="auth-error">{error}</div>}
+
       {summary && (
-        <div className="auth-success">
+        <div className="auth-success" role="status">
           {summary.message}: {summary.alloted} allotted, {summary.notAlloted} not allotted (of {summary.totalApplications} applications).
         </div>
       )}
@@ -48,40 +70,65 @@ export default function AdminAllocation() {
             Clears the previous result first, and automatically closes the round.
           </p>
         </div>
-        <button className="btn btn-primary run-btn" onClick={runAllocation} disabled={running}>
-          <Play size={17} /> {running ? "Running…" : "Run Allocation"}
+        <button className="btn btn-primary" onClick={() => setConfirmOpen(true)} disabled={running}>
+          {running ? <span className="spinner" aria-hidden /> : <Play size={17} aria-hidden />}
+          {running ? "Running…" : "Run Allocation"}
         </button>
       </div>
 
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Run the seat allocation?"
+        message={`This clears any previous result and re-allots every seat from scratch based on current preferences${round?.status === "open" ? ", then closes the round" : ""}. Candidates will see their new result immediately.`}
+        confirmLabel="Run allocation"
+        busy={running}
+        onConfirm={runAllocation}
+        onCancel={() => setConfirmOpen(false)}
+      />
+
       <div className="list-head" style={{ marginTop: 8 }}>
         <h3 className="pref-title" style={{ margin: 0 }}>Allotments</h3>
-        {allotments.length > 0 && <span className="count-badge">{allotments.length} seats</span>}
+        {!loading && allotments.length > 0 && <span className="count-badge">{allotments.length.toLocaleString()} seats</span>}
       </div>
 
-      {allotments.length === 0 ? (
-        <div className="empty-state">
-          <span className="empty-icon"><Trophy size={40} /></span>
-          <h3>No allotments yet</h3>
-          <p>Run the allocation to generate results. Allotted candidates will appear here, ranked by percentile.</p>
-        </div>
+      {error ? (
+        <ErrorState title="Unable to load allotments" message={error} onRetry={loadAllotments} />
+      ) : !loading && allotments.length === 0 ? (
+        <EmptyState
+          icon={Trophy}
+          title="No allotments yet"
+          message="Run the allocation to generate results. Allotted candidates will appear here, ranked by percentile."
+        />
       ) : (
         <div className="card table-card">
-          <table className="data-table">
-            <thead>
-              <tr><th>#</th><th>Candidate</th><th>Percentile</th><th>Allotted College</th><th>Branch</th></tr>
-            </thead>
-            <tbody>
-              {allotments.slice().sort((a, b) => (b.student?.cetPercentile ?? -1) - (a.student?.cetPercentile ?? -1)).map((al, i) => (
-                <tr key={al._id}>
-                  <td>{i + 1}</td>
-                  <td>{al.student?.name || "—"}<br /><span className="sub-text">{al.student?.email}</span></td>
-                  <td>{al.student?.cetPercentile ?? "—"}</td>
-                  <td>{al.college?.name || "—"} <span className="sub-text">({al.college?.code})</span></td>
-                  <td>{al.branchName}</td>
+          <div className="table-scroll" tabIndex={-1}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Candidate</th>
+                  <th scope="col" className="ta-num">Percentile</th>
+                  <th scope="col">Allotted College</th>
+                  <th scope="col">Branch</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              {loading ? (
+                <TableSkeleton rows={6} cols={5} />
+              ) : (
+                <tbody>
+                  {ranked.map((al, i) => (
+                    <tr key={al._id}>
+                      <td>{i + 1}</td>
+                      <td>{al.student?.name || "—"}<br /><span className="sub-text">{al.student?.email}</span></td>
+                      <td className="ta-num">{al.student?.cetPercentile ?? "—"}</td>
+                      <td>{al.college?.name || "—"} <span className="sub-text">({al.college?.code})</span></td>
+                      <td>{al.branchName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              )}
+            </table>
+          </div>
         </div>
       )}
     </Layout>

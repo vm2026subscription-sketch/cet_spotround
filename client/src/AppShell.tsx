@@ -1,4 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
+import { Toaster } from "sonner";
 // @ts-expect-error - JSX file
 import App from "./App.jsx";
 // @ts-expect-error - JSX file
@@ -9,6 +10,12 @@ export default function AppShell() {
     <BrowserRouter>
       <AuthProvider>
         <App />
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{ style: { fontFamily: "inherit" } }}
+        />
       </AuthProvider>
     </BrowserRouter>
   );

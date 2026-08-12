@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ShieldCheck, Lock, Mail, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Lock, Mail, ArrowRight, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { apiErrorMessage } from "../lib/apiError";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +21,7 @@ export default function Login() {
       const user = await login(email, password);
       navigate(user.role === "admin" ? "/admin" : "/student");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      setError(apiErrorMessage(err, "Login failed. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -32,20 +34,20 @@ export default function Login() {
           <span className="app-brand-mark" aria-hidden />
           <span>
             <div className="app-brand-title">Virtual CAP Portal</div>
-            <div className="app-brand-sub" style={{ color: "rgba(255,255,255,0.65)" }}>Government of Maharashtra</div>
+            <div className="app-brand-sub" style={{ color: "rgba(255,255,255,0.65)" }}>Vidyarthi Mitra · Maharashtra</div>
           </span>
         </Link>
 
         <div className="auth-side-copy">
-          <span className="auth-side-eyebrow"><ShieldCheck size={13} /> Secure Admission Access</span>
+          <span className="auth-side-eyebrow"><ShieldCheck size={13} aria-hidden /> Secure Admission Access</span>
           <h1 className="auth-side-title">One portal for every CAP round.</h1>
           <p className="auth-side-sub">
             Track vacancies, submit preferences, and download your provisional allotment letter — all in a single verified workspace.
           </p>
           <ul className="auth-side-list">
-            <li><CheckCircle2 size={15} /> Real-time seat visibility across institutes</li>
-            <li><CheckCircle2 size={15} /> Merit-based automated allocation</li>
-            <li><CheckCircle2 size={15} /> Signed provisional allotment letters</li>
+            <li><CheckCircle2 size={15} aria-hidden /> Real-time seat visibility across institutes</li>
+            <li><CheckCircle2 size={15} aria-hidden /> Merit-based automated allocation</li>
+            <li><CheckCircle2 size={15} aria-hidden /> Signed provisional allotment letters</li>
           </ul>
         </div>
 
@@ -59,31 +61,33 @@ export default function Login() {
             <p className="auth-panel-sub">Candidate and administrator access.</p>
           </div>
 
-          {error && <div className="auth-error">{error}</div>}
+          {error && <div className="auth-error" role="alert">{error}</div>}
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
             <div className="field">
-              <label htmlFor="email">Email address</label>
+              <label htmlFor="email" className="req">Email address</label>
               <div className="input-icon">
-                <Mail size={15} />
+                <Mail size={15} aria-hidden />
                 <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com" required autoComplete="email" />
               </div>
             </div>
             <div className="field">
-              <div className="field-row">
-                <label htmlFor="password">Password</label>
-                <a href="#" className="field-link" onClick={(e) => e.preventDefault()}>Forgot password?</a>
-              </div>
+              <label htmlFor="password" className="req">Password</label>
               <div className="input-icon">
-                <Lock size={15} />
-                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                <Lock size={15} aria-hidden />
+                <input id="password" type={showPw ? "text" : "password"} className="has-toggle"
+                  value={password} onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password" required autoComplete="current-password" />
+                <button type="button" className="pw-toggle" onClick={() => setShowPw((v) => !v)}
+                  aria-label={showPw ? "Hide password" : "Show password"}>
+                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
               </div>
             </div>
 
             <button className="btn btn-primary btn-block btn-lg" type="submit" disabled={loading}>
-              {loading ? "Signing in…" : (<>Sign in <ArrowRight size={16} /></>)}
+              {loading ? (<><span className="spinner" aria-hidden /> Signing in…</>) : (<>Sign in <ArrowRight size={16} aria-hidden /></>)}
             </button>
           </form>
 
